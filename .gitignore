@@ -1,0 +1,15 @@
+node_modules
+dist*
+
+*.local
+*.zip
+*.rar
+*.log
+*.http
+
+.DS_Store
+.history
+.compiledir
+
+components.d.ts
+auto-imports.d.ts

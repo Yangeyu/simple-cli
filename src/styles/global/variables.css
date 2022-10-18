@@ -1,0 +1,31 @@
+:root {
+  /* ========================================
+  颜色变量值
+  ======================================== */
+  
+  /* ========================================
+  ElementPlus 颜色变量
+  ======================================== */
+
+  /* 输入框边框hover */
+  /* --el-border-color-hover: red;  */
+  
+  /* ========================================
+  字体变量值
+  ======================================== */
+  --font-xs: 10px;
+  --font-sm: 12px;
+  --font-md: 14px;
+  --font-lg: 16px; 
+  --font-weight-bold: 500;
+  --family-base: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+  Helvetica, Segoe UI, Arial, Roboto, "PingFang SC", "miui", "Hiragino Sans GB",
+  "Microsoft Yahei", sans-serif;
+  --family-number: Avenir-Heavy, PingFang SC, Helvetica Neue, Arial, sans-serif;
+  --font: var(--font-md) / 1.2 var(--family-base);
+
+  /* ========================================
+  TabBar(标签栏)变量值
+  ======================================== */
+
+}

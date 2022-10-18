@@ -1,0 +1,1 @@
+export const deepClone = (target: any) => structuredClone(target)
