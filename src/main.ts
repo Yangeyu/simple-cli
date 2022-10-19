@@ -7,3 +7,6 @@ import { setupRouter } from './router'
 const app = createApp(App)
 setupRouter(app)
 app.mount('#app')
+
+// TODO: 设置弹窗组件
+// window.$message = ??
