@@ -139,7 +139,7 @@ module.exports = {
     'vue/no-multiple-template-root': 0,
     'vue/singleline-html-element-content-newline': 0,
     'vue/multiline-html-element-content-newline': 0,
-    'vue/max-attributes-per-line': [2, {
+    'vue/max-attributes-per-line': [0, {
       'singleline': {
         'max': 3,
       },
