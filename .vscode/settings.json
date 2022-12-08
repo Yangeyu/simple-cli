@@ -6,7 +6,7 @@
   },
   "files.associations": {
     "*.http": "http",
-    ".env.dev": "dotenv",
+    ".env.*": "dotenv",
   },
   "path-intellisense.mappings": {
     "@": "${workspaceRoot}/src",

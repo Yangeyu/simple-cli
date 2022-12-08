@@ -6,6 +6,8 @@ import createHtml from './plugins/html';
 import { IViteEnv } from './types';
 import createSetupExtend from './plugins/setup-extend';
 import createComponents from './plugins/components';
+import createCompression from './plugins/compression';
+import createLegacy from './plugins/legacy';
 
 export default function loadVitePlugins(viteEnv: IViteEnv, isBuild = false): Plugin[] {
   const plugins: Plugin[] = []
@@ -16,6 +18,8 @@ export default function loadVitePlugins(viteEnv: IViteEnv, isBuild = false): Plu
   plugins.push(createHtml(viteEnv, isBuild) as Plugin)
   plugins.push(createSetupExtend())
   plugins.push(createComponents())
+  isBuild && plugins.push(...createCompression(viteEnv))
+  isBuild && plugins.push(...createLegacy(viteEnv))
   return plugins
 }
 

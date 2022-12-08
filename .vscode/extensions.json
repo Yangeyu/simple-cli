@@ -3,7 +3,6 @@
     "vue.volar",
     "voorjaar.windicss-intellisense",
     "dbaeumer.vscode-eslint",
-    "vue.vscode-typescript-vue-plugin",
     "christian-kohler.path-intellisense"
   ]
 }
