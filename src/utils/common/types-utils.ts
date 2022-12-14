@@ -12,7 +12,7 @@ export type UnionVarToUnion<U> = (U extends unknown ? (k: U) => void : never) ex
 // 展开类型变量
 export type Spread<T> = isUnion<T> extends true
   ? UnionVarToUnion<T>
-  : T extends object
+  : T extends Function ? T : T extends object
   ? { [K in keyof T]: Spread<T[K]> }
   : T
 

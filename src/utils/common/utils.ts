@@ -1,3 +1,5 @@
+import type { Spread } from './types-utils'
+ 
 export const deepClone = (target: any) => structuredClone(target)
 
 /**
@@ -67,4 +69,12 @@ export const sleep = (duration: number) => {
       resovle('')
     }, duration)
   })
+}
+
+/**
+ * @description Object.create 类型封装
+ */
+export const genObjectBy = <T extends object | null, V>(target: T, propsObject?: V): Spread<T & V> => {
+  if (propsObject) return Object.assign(Object.create(target), propsObject) 
+  return Object.create(target) 
 }
