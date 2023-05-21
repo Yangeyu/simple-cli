@@ -21,9 +21,10 @@ export default defineConfig(({ command, mode }: ConfigEnv) => {
         },
       ],
     },
+    envPath,
     plugins: loadVitePlugins(viteEnv, isBuild),
     server: {
-      open: true,
+      open: false,
       host: '0.0.0.0',
     },
     build: {

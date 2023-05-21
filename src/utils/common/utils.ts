@@ -1,5 +1,6 @@
 import type { Spread } from './types-utils'
- 
+import { format } from 'date-fns'
+
 export const deepClone = (target: any) => structuredClone(target)
 
 /**
@@ -75,6 +76,46 @@ export const sleep = (duration: number) => {
  * @description Object.create 类型封装
  */
 export const genObjectBy = <T extends object | null, V>(target: T, propsObject?: V): Spread<T & V> => {
-  if (propsObject) return Object.assign(Object.create(target), propsObject) 
-  return Object.create(target) 
+  if (propsObject) return Object.assign(Object.create(target), propsObject)
+  return Object.create(target)
 }
+
+/**
+ * @description 格式化时间戳
+ * @description yyyy | MM | dd | HH | mm | ss
+ */
+export const formatSecOrMsec = (timestamp: number, target: string) => {
+  if (timestamp.toString().length === 10) timestamp = timestamp * 1000
+  return format(timestamp, target)
+}
+
+/**
+ * @description 错误处理封装
+ */
+export const useErrorHanlding = () => {
+  let defaultHandler: any = (e: any) => {
+    console.error('withErrorHandler:', e);
+  }
+
+  const withErrorHandler = async <T extends (...args: any[]) => any>(cb: T, args: Parameters<T> | [] = [], cusHandleError?: (e: any) => void) => {
+    const handleError = cusHandleError
+      ? cusHandleError
+      : defaultHandler
+
+    try {
+      return await cb(...args)
+    } catch (e) {
+      handleError(e)
+    }
+  }
+
+  const registerErrorHanlder = (fn: Function) => {
+    defaultHandler = fn
+  }
+
+  return {
+    withErrorHandler,
+    registerErrorHanlder,
+  }
+}
+
