@@ -4,7 +4,6 @@ import createAutoImport from './plugins/auto-import';
 import WindiCSS from 'vite-plugin-windicss'
 import createHtml from './plugins/html';
 import { IViteEnv } from './types';
-import createSetupExtend from './plugins/setup-extend';
 import createComponents from './plugins/components';
 import createCompression from './plugins/compression';
 import createLegacy from './plugins/legacy';
@@ -17,7 +16,6 @@ export default function loadVitePlugins(viteEnv: IViteEnv, isBuild = false): Plu
   plugins.push(createAutoImport())
   plugins.push(...WindiCSS())
   plugins.push(createHtml(viteEnv, isBuild) as Plugin)
-  plugins.push(createSetupExtend())
   plugins.push(createComponents())
   plugins.push(createUnpluginIcons())
   isBuild && plugins.push(...createCompression(viteEnv))

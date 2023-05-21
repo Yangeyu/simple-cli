@@ -1,7 +1,7 @@
 <template>
   <div>Demo</div>
 </template>
-<script lang="ts" setup name="Demo">
+<script lang="ts" setup>
 
 </script>
 <style scoped>

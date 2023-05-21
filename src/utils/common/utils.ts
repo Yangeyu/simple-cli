@@ -32,35 +32,6 @@ export const transBytes = (bytes: number) => {
 }
 
 /**
- * @description 时间转换
- * @param timestamp: number 
- * @param level: 1: YY-MM-DD HH:mm | 2: YY-MM-DD | 3: YY-MM-DD HH:mm:ss
- */
-export const transDate = (timestamp: number, level = 1) => {
-  const isMillisecond = (timestamp: any) => timestamp.toString().length === 13
-  const sliceLastTowChar = (str: string) => str.slice(str.length - 2)
-
-  if (!isMillisecond(timestamp)) timestamp = timestamp * 1000
-
-  const d = new Date(timestamp)
-  const year = d.getFullYear()
-  const month = sliceLastTowChar(`0${d.getMonth() + 1}`)
-  const date = sliceLastTowChar(`0${d.getDate()}`)
-  const hours = sliceLastTowChar(`0${d.getHours()}`)
-  const minutes = sliceLastTowChar(`0${d.getMinutes()}`)
-  const seconds = sliceLastTowChar(`0${d.getSeconds()}`)
-
-  if (level === 2) return year + '-' + month + '-' + date
-
-  if (level === 3) {
-    return year + '-' + month + '-' + date + ' '
-      + hours + ':' + minutes + ':' + seconds
-  }
-
-  return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes
-}
-
-/**
  * @description 异步等待
  * @param duration: 时长
  */
@@ -97,6 +68,12 @@ export const useErrorHanlding = () => {
     console.error('withErrorHandler:', e);
   }
 
+  /**
+   * @description catch Error
+   * @cb: 执行的函数
+   * @args: 执行函数的参数数组 [...args]
+   * @cusHandleError: 自定义的错误处理函数
+   */
   const withErrorHandler = async <T extends (...args: any[]) => any>(cb: T, args: Parameters<T> | [] = [], cusHandleError?: (e: any) => void) => {
     const handleError = cusHandleError
       ? cusHandleError
