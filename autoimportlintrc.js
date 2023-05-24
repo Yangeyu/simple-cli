@@ -54,5 +54,6 @@ module.exports = {
     onClickOutside: 'readonly',
     watchDebounced: 'readonly',
     unrefElement: 'readonly',
+    useIntersectionObserver: 'readonly',
   },
 };

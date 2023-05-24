@@ -1,16 +1,6 @@
-/*
- * @Overview     : Do not edit
- * @Author       : Zi Jun
- * @Email        : zijun2030@163.com
- * @Date         : 2021-12-04 14:25:59
- * @LastEditTime : 2021-12-04 21:20:37
- * @LastEditors  : Zi Jun
- */
-
 import { AxiosRequestConfig } from 'axios';
 import { Axios } from './axios';
-import { ContentTypeEnum } from '@/utils/enums';
-
+import { ContentTypeEnum } from './enums';
 
 const { baseApiUrl } = $config;
 const { VITE_API_URL } = import.meta.env;
@@ -25,13 +15,10 @@ const defaultConfig = (): AxiosRequestConfig => {
 
   const headers = {
     'Content-Type': ContentTypeEnum.RAW,
-    // 'Authorization': '0e54940221bf4fdc8a4e735d3da26468',
   };
   console.log(baseURL);
-
   return { baseURL, headers };
 };
-
 
 
 const { baseURL, headers } = defaultConfig();
@@ -41,14 +28,14 @@ const { baseURL, headers } = defaultConfig();
  * @param {*}
  * @return {*}
  */
-export const fetchAxios = new Axios({
+export const http = new Axios({
   baseURL,
   headers,
   timeout,
-  defaultExtraOptions: {
-    isHideRequestLoading: true,
+  extraOptions: {
     isIgnoreCancelToken: false,
     isHandleResponseResult: true,
-    loadingText: '加载中',
   },
 });
+
+

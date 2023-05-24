@@ -1,63 +1,55 @@
-import axios, { Canceler, AxiosRequestConfig } from 'axios';
+import { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
 // 用于存储每个请求的标识
-export let pendingMap = new Map<string, Canceler>();
+const pendingMap = new Map<string, AbortController>()
 
-export class AxiosCanceler {
+export const HttpCanceler = {
+
   /**
    * @description: 获取
    * @param {AxiosRequestConfig} config 请求参数
-   * @return {*}
    */
-  private static getPendingUrl(config: AxiosRequestConfig): string {
-    return [config.method, config.url].join('&');
-  }
+  genPendingKey(config: AxiosRequestConfig) {
+    const bodyStr = JSON.stringify(config.data ?? config.params ?? {})
+    return [config.method, config.url, bodyStr].join('&')
+  },
 
   /**
    * @description: 添加请求
    * @param {AxiosRequestConfig} config
-   * @return {*}
    */
-  public addPending(config: AxiosRequestConfig): void {
-    this.removePending(config);
-    const url = AxiosCanceler.getPendingUrl(config);
-    config.cancelToken =
-      config.cancelToken ??
-      new axios.CancelToken(cancel => {
-        // 如果pendingMap中不存在当前请求，则添加进入
-        if (!pendingMap.has(url)) {
-          pendingMap.set(url, cancel);
-        }
-      });
-  }
+  addPending(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+    this.removePending(config)
+
+    const key = this.genPendingKey(config)
+    const controller = new AbortController()
+    config.signal = controller.signal
+    pendingMap.set(key, controller)
+    return config
+  },
 
   /**
    * @description: 移除请求
    * @param {AxiosRequestConfig} config
    */
-  public removePending(config: AxiosRequestConfig): void {
-    const url = AxiosCanceler.getPendingUrl(config);
-    if (pendingMap.has(url)) {
-      const cancel = pendingMap.get(url);
-      cancel && cancel(url);
-      pendingMap.delete(url);
-    }
-  }
+  removePending(config: AxiosRequestConfig) {
+    const key = this.genPendingKey(config)
+    const controller = pendingMap.get(key)
+    controller?.abort()
+    pendingMap.delete(key)
+  },
 
   /**
    * @description: 清空请求
    */
-  public removeAllPending(): void {
-    pendingMap.forEach(cancel => {
-      cancel && cancel();
-    });
-    pendingMap.clear();
-  }
+  removeAllPending() {
+    pendingMap.forEach(controller => { controller.abort() })
+    pendingMap.clear()
+  },
 
-  /**
-   * @description: 重置pendingMap
-   */
-  public reset(): void {
-    pendingMap = new Map<string, Canceler>();
-  }
 }
+
+
+
+
+

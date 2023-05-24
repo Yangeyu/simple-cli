@@ -18,3 +18,16 @@ export type Spread<T> = isUnion<T> extends true
 
 // 获取对象值的uinio
 export type GetV<T> = T[keyof T]
+
+
+type Merge<T> = {
+  [key in keyof T]: T[key]
+}
+
+export type PartialByKeys<T, K = any> = Merge<{
+  [key in Exclude<keyof T, K>]: T[key]
+} & {
+  [key in Extract<keyof T, K>]?: T[key]
+}>
+
+export type RequiredByKeys<T, K extends keyof T = keyof T> = Merge<Omit<T, K> & Required<Pick<T, K>>>

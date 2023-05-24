@@ -1,84 +1,91 @@
-/*
- * @Overview     : Do not edit
- * @Author       : Zi Jun
- * @Email        : zijun2030@163.com
- * @Date         : 2021-12-04 14:25:59
- * @LastEditTime : 2021-12-04 21:21:48
- * @LastEditors  : Zi Jun
+import axios, { AxiosInstance } from 'axios';
+import { EAxiosOptions, EAxiosRequestConfig, IExtraOptions } from './types';
+import {
+  requestCatchInterceptor, requestInterceptor,
+  responseCatchInterceptor, responseInterceptor } from './interceptors';
+import { Method } from './enums';
+
+/**
+ * Axios class for making HTTP requests using axios library with interceptors.
  */
-
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { IRequestConfig, IExtraOptions } from './types';
-import { AxiosHooks } from './hooks';
-import { deepClone } from '../common/utils';
-const axiosHooks = new AxiosHooks();
-
 export class Axios {
   private axios: AxiosInstance;
-  private readonly options: IRequestConfig;
+  private readonly options: EAxiosOptions;
 
-  constructor(options: IRequestConfig) {
-    this.options = options;
-    this.axios = axios.create(options);
-    this.setupHooks();
+  /**
+   * Creates an instance of Axios.
+   * @param options The options used to create the axios instance.
+   */
+  constructor(options: EAxiosOptions) {
+    this.options = options
+    this.axios = axios.create(options)
+    this.setupHook()
   }
 
-  private setupHooks(): void {
-    /* axios原生拦截处理 */
-    const { request, response } = this.axios.interceptors;
-    // axios原生请求拦截
+  /**
+   * Sets up the interceptors for the axios instance.
+   */
+  private setupHook() {
+    const { request, response } = this.axios.interceptors
+
     request.use(
-      (config: AxiosRequestConfig): AxiosRequestConfig => {
-        if (axiosHooks.requestInterceptorHook) {
-          return axiosHooks.requestInterceptorHook(config);
-        } else {
-          return config;
-        }
-      },
-      (error: Error) => {
-        return Promise.reject(error);
-      }
-    );
-    // axios原生相应拦截
+      requestInterceptor,
+      requestCatchInterceptor
+    )
+
     response.use(
-      (res: AxiosResponse): AxiosResponse => {
-        if (axiosHooks.responseInterceptorHook) {
-          return axiosHooks.responseInterceptorHook(res);
-        } else {
-          return res;
-        }
-      },
-      (error: Error) => {
-        if (axiosHooks.responseCatchErrorHook) {
-          return axiosHooks.responseCatchErrorHook(error);
-        }
-      }
-    );
+      responseInterceptor,
+      responseCatchInterceptor
+    )
   }
 
+  /**
+   * Makes a HTTP request using the axios instance.
+   * @param config The configuration for the request.
+   * @param extraOptions Optional extra options for the request.
+   * @returns A promise that resolves to the response data.
+   */
   public request<T = any>(
-    config: AxiosRequestConfig,
+    config: EAxiosRequestConfig,
     extraOptions?: IExtraOptions
   ): Promise<T> {
-    const { defaultExtraOptions } = this.options;
-    const originalOptions = deepClone(this.options);
-    // if (originalOptions.defaultExtraOptions) { delete originalOptions.defaultExtraOptions; }
-    axiosHooks.beforeRequestHook &&
-      axiosHooks.beforeRequestHook(
-        config,
-        originalOptions,
-        defaultExtraOptions,
-        extraOptions
-      );
-    return new Promise<T>((resolve, reject) => {
-      this.axios
-        .request(config)
-        .then(res => {
-          resolve(res as unknown as Promise<T>);
-        })
-        .catch((err: Error) => {
-          reject(err);
-        });
-    });
+    config.meta = Object.assign({}, this.options.extraOptions, extraOptions)
+    return this.axios.request<T>(config) as Promise<T>
+  }
+
+  /**
+   * Makes a POST request using the axios instance.
+   * @param config The configuration for the request.
+   * @param extraOptions Optional extra options for the request.
+   * @returns A promise that resolves to the response data.
+   */
+  public post<T = any>(
+    config: Omit<EAxiosRequestConfig, 'method'>,
+    extraOptions?: IExtraOptions
+  ): Promise<T> {
+    return this.request<T>(
+      {
+        method: Method.POST,
+        ...config,
+      },
+      extraOptions)
+  }
+
+  /**
+   * Makes a GET request using the axios instance.
+   * @param config The configuration for the request.
+   * @param extraOptions Optional extra options for the request.
+   * @returns A promise that resolves to the response data.
+   */
+  public get<T = any>(
+    config: Omit<EAxiosRequestConfig, 'method'>,
+    extraOptions?: IExtraOptions
+  ): Promise<T> {
+    return this.request<T>(
+      {
+        method: Method.GET,
+        ...config,
+      },
+      extraOptions)
   }
 }
