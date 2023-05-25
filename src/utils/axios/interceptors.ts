@@ -65,7 +65,7 @@ export const responseInterceptor = (rsp: AxiosResponse & { config: EAxiosRequest
   const defaultToast = (msg: string) => {
     const pattern = /[\u4e00-\u9fa5]/
     // 判断是否为中文
-    msg = pattern.test(msg) ? msg : '出错了，请稍后重新'
+    msg = pattern.test(msg) ? msg : '出错了，请稍后重试'
     $message.error(msg)
   }
 

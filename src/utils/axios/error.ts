@@ -47,16 +47,16 @@ export const networkError = (message: string): void => {
   if (message === NetworkErrorEnum.ERROR) {
     msg = '网络异常，请检查网络设置';
   } else if (message.includes(NetworkErrorEnum.TIMEOUT)) {
-    msg = '网络异常，请检查网络设置';
+    msg = '网络请求超时，请检查网络设置';
   } else {
-    msg = '请求失败';
+    msg = '网络摆烂了，请稍后重试';
   }
   toastError(msg);
 };
 
 
 function handleTokenExpired() {
-  toastError('未授权，请登录')
+  toastError('登录已失效，请重新登录')
   HttpCanceler.removeAllPending()
 }
 
