@@ -11,6 +11,7 @@ export default function createAutoImport(): Plugin {
       'vue-router',
       '@vueuse/core',
       'pinia',
+      'vitest'
     ],
     // eslintrc: {
     //   'enabled': true
