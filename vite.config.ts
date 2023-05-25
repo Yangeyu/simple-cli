@@ -1,10 +1,10 @@
 import { defineConfig, ConfigEnv, loadEnv } from 'vite'
 import { resolve } from 'path'
-import loadVitePlugins, { convertEnv } from './vite'
-import { IViteEnv } from './vite/types'
+import loadVitePlugins, { convertEnv } from './vites'
+import { IViteEnv } from './vites/types'
 
 // https://vitejs.dev/config/
-const envPath = resolve('vite/env')
+const envPath = resolve('vites/env')
 
 export default defineConfig(({ command, mode }: ConfigEnv) => {
   const viteEnv: IViteEnv = convertEnv(loadEnv(mode, envPath))
