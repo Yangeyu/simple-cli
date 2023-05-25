@@ -12,6 +12,9 @@ export default function createAutoImport(): Plugin {
       '@vueuse/core',
       'pinia',
     ],
+    // eslintrc: {
+    //   'enabled': true
+    // },
     resolvers: [
       IconsResolver({}),
       ElementPlusResolver()
