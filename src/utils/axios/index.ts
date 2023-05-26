@@ -33,7 +33,7 @@ export const http = new Axios({
   headers,
   timeout,
   extraOptions: {
-    isIgnoreCancelToken: true,
+    isEnableCancelToken: true,
     isHandleResponseResult: true,
   },
 });

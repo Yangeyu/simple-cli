@@ -12,7 +12,7 @@ export interface IExtraOptions {
   // 是否隐藏接口请求loading效果
   isHideRequestLoading?: boolean;
   // 是否忽略重复请求
-  isIgnoreCancelToken?: boolean;
+  isEnableCancelToken?: boolean;
   // 是否处理相应结果
   isHandleResponseResult?: boolean;
 }

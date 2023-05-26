@@ -21,7 +21,7 @@ export const requestInterceptor = (config: InternalAxiosRequestConfig & EAxiosRe
   chain.push(methodCompatibility)
 
   // 是否 cancel 连续的重复请求
-  if (meta?.isIgnoreCancelToken) chain.push(enableCancel)
+  if (meta?.isEnableCancelToken) chain.push(enableCancel)
 
   return chain.reduce((prev, interceptor) => interceptor(prev), config)
 }
@@ -59,9 +59,13 @@ const enableCancel = (config: InternalAxiosRequestConfig): InternalAxiosRequestC
  */
 export const responseInterceptor = (rsp: AxiosResponse & { config: EAxiosRequestConfig }) => {
   const { data: { code, message }, config: { meta } } = rsp
+  // 请求成功后清除 cancelr
+  meta?.isEnableCancelToken && HttpCanceler.removePending(rsp.config)
+
   if (!meta?.isHandleResponseResult) return rsp
 
   if (!code || successCode.includes(code)) return rsp.data
+
   const defaultToast = (msg: string) => {
     const pattern = /[\u4e00-\u9fa5]/
     // 判断是否为中文
