@@ -15,4 +15,6 @@ export interface IExtraOptions {
   isEnableCancelToken?: boolean;
   // 是否处理相应结果
   isHandleResponseResult?: boolean;
+  // 请求失败重试
+  retry?: number
 }

@@ -3,6 +3,7 @@ import { Method } from './enums';
 import { CUS_ERROR_CODE_HANDLER, ERROR_CODE_HANDLER, networkError } from './error';
 import { EAxiosRequestConfig } from './types';
 import { HttpCanceler } from './cancel';
+import { Axios } from './axios';
 
 const { axios: { successCode } } = $config;
 
@@ -88,8 +89,17 @@ export const responseInterceptor = (rsp: AxiosResponse & { config: EAxiosRequest
  * @returns A rejected Promise with the same error object if there is an Axios response error
  */
 export const responseCatchInterceptor = (err: AxiosError): Promise<AxiosError> => {
+  console.error({ err, url: err.config?.url });
+  const { meta } = (err.config as EAxiosRequestConfig)
+
   // Skip canceled error
   if (axios.isCancel(err) as any) { return Promise.reject(err) }
+
+  // Retry request if error occurs
+  const { retry } = meta || {}
+  if (retry && retry > 0) {
+    return new Axios({}).request(err.config as any, { ...meta, retry: retry - 1 })
+  }
 
   // Gateway status code handling
   if (err.response) {
