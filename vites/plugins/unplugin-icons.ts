@@ -7,11 +7,11 @@ export function createUnpluginIcons (): Plugin  {
     compiler: 'vue3',
     autoInstall: true,
     customCollections: {
-      custom: FileSystemIconLoader('src/assets'),
+      cus: FileSystemIconLoader('src/assets/icons'),
     },
     iconCustomizer(collection, icon, props) {
       const name = `${collection}:${icon}`
-      if (collection === 'custom') {
+      if (collection === 'cus') {
         props.width = '4em'
         props.height = '4em'
         props.color = 'skyblue'

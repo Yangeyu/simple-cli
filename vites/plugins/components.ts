@@ -11,7 +11,7 @@ export default function createComponents(): Plugin {
     resolvers: [
       ElementPlusResolver(),
       IconResolver({
-        customCollections: ['custom']
+        customCollections: ['cus']
       })
     ],
   });
