@@ -10,7 +10,11 @@ type ResData = {
  * Displays an error toast message.
  * @param msg The error message to display
  */
-const toastError = (msg: string): void => $message.error(msg);
+const toastError = (msg: string): void => $message({
+  type: 'error',
+  message: msg,
+  grouping: true,
+});
 
 // 网络错误类型
 export enum NetworkErrorEnum {
