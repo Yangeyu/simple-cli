@@ -12,6 +12,7 @@ export const useReconnect = (
   const { interval = 5000, retryCount = 5 } = options
   let timer: any = null
   let isStarted = false
+  let resumSocket: any = null
 
   const clearTimer = () => {
     if (!timer) return
@@ -42,13 +43,9 @@ export const useReconnect = (
 
     const retry = async () => {
       clearTimer()
-      if (curCount > retryCount) {
-        return print.error('[Socket(Reconnect) - ERROR] - Maximum reconnection attempts reached');
-      }
 
       hosts = hosts || await getHosts().catch(() => {
-        curCount++
-        timer = setTimeout(retry, interval)
+        startNext()
         return Promise.reject() as Promise<any[]>
       })
 
@@ -63,9 +60,7 @@ export const useReconnect = (
       print.tip(`[Socket(Reconnect) - RUNNING] - 目标服务器: ${host}`)
       const url = socket.raw.url.replace(/ws.*?(?=\?)/, `${host}`)
       socket.resetSocket(url)
-
-      curCount++
-      timer = setTimeout(retry, interval)
+      startNext()
     }
 
     const getHosts = async () => {
@@ -74,7 +69,25 @@ export const useReconnect = (
       return host_list || []
     }
 
-    timer = setTimeout(retry, interval)
+    const startNext = () => {
+      curCount++
+      if (curCount > retryCount) {
+        socket.$emit('break')
+        socket.$setLinkState('break')
+        return print.error('[Socket(Reconnect) - ERROR] - Maximum reconnection attempts reached');
+      }
+      timer = setTimeout(retry, interval)
+    }
+
+    timer = setTimeout(retry, 0)
+  }
+
+  /**
+   * 监听系统网络恢复，执行 socket 链接恢复.
+   * @returns void
+   */
+  const onOnline = () => {
+    resumSocket && resumSocket()
   }
 
   /**
@@ -85,6 +98,16 @@ export const useReconnect = (
    * @throws Nothing.
    */
   const inject = (socket: Socket): void => {
+
+    window.addEventListener('online', onOnline)
+    resumSocket = () => {
+      if (socket.socketState === 'break') {
+        print('websocket 恢复链接啦')
+        socket.resetSocket(socket.raw.url)
+        socket.$setLinkState('live')
+      }
+    }
+
     socket.addEventListener('error', () => {
       print.error(`[Socket(reconnect - listener)] -> <readyState - ${socket.raw.readyState}>`)
       // if (socket.raw.readyState === ReadyState.CONNECTING) {
@@ -110,6 +133,7 @@ export const useReconnect = (
     socket.addEventListener('destroy', () => {
       // socket 被主动销毁时停止重连
       stop();
+      window.removeEventListener('online', onOnline)
     });
   };
 

@@ -5,20 +5,21 @@ export type TypeMiddleWare = {
   inject: (socket: Socket) => void
   [k: string]: any
 }
-export type EventName = 'message' | 'close' | 'open' | 'error' | 'destroy'
+export type EventName = 'message' | 'close' | 'open' | 'error' | 'break' | 'destroy'
 export enum ReadyState {
   CONNECTING = 0,
   OPEN = 1,
   CLOSING = 2,
   CLOSED = 3,
 }
+export type LinkType = 'live' | 'break' | 'destroy'
 
 export class Socket {
   private ws: WebSocket
   private eventMap = new Map<EventName, Set<(ev: any) => void>>()
   private sendQue: (() => void)[] = []
   private middlewareSet: Set<TypeMiddleWare> = new Set()
-  private isDestroying = false
+  private linkType: LinkType = 'live'
 
   constructor(url: string) {
     this.ws = new WebSocket(url)
@@ -32,6 +33,12 @@ export class Socket {
   get raw(): Readonly<WebSocket> {
     return readonly(this.ws)
   }
+
+  /**
+   * Returns the socket state of the object.
+   * @returns The current socket state.
+   */
+  get socketState() { return this.linkType }
 
   /**
    * Initializes the event listener for the WebSocket instance.
@@ -76,7 +83,7 @@ export class Socket {
     const evFns = this.eventMap.get('close')
     evFns?.forEach(fn => fn(ev))
 
-    this.isDestroying && this.emitDestroy()
+    if (this.linkType === 'destroy') this.emitDestroy()
   }
 
   /**
@@ -97,6 +104,7 @@ export class Socket {
     print.error('[Socket(Event) -> destroy] ↓', ev)
     const evFns = this.eventMap.get('destroy');
     evFns?.forEach(fn => fn(ev));
+    this.sendQue = []
     this.clearAllEvents('all')
   }
 
@@ -143,13 +151,21 @@ export class Socket {
 
   /**
    * @description 触发事件回调
-   * @param evName: 自定义事件名称
+   * @param evname: 自定义事件名称
    * @param args: 传入的事件回调的参数
    */
   public $emit = (evName: string, ...args: any[]) => {
     const fns = this.eventMap.get(evName as any)
     // @ts-ignore
     fns?.forEach(fn => fn(...args))
+  }
+
+  /**
+   * @description 由中间件设置链接状态
+   * @param state: LinkType 
+   */
+  public $setLinkState = (state: LinkType) => {
+    this.linkType = state
   }
 
   /**
@@ -187,6 +203,7 @@ export class Socket {
 
     if (this.ws.readyState === ReadyState.CLOSED) {
       print('[Socket - send] => <readyState - CLOSED>')
+      this.sendQue.push(() => this.ws.send(JSON.stringify(data)))
     }
   }
 
@@ -194,7 +211,7 @@ export class Socket {
    * @description 销毁实例，确保在 WebSocket close 事件后执行 destroy 事件
    */
   public destroy = (): void => {
-    this.isDestroying = true
+    this.linkType = 'destroy'
     this.ws.close();
     if (this.ws.readyState === ReadyState.CLOSED) this.emitDestroy();
   }
