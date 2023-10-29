@@ -49,7 +49,7 @@ export const useReconnect = (
         return Promise.reject() as Promise<any[]>
       })
 
-      if (hosts.length === 0) {
+      if (!hosts || hosts.length === 0) {
         return print.error('[Socket(Reconnect) - ERROR] - No servers available to reconnect')
       }
 

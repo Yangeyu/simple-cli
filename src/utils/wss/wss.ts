@@ -5,6 +5,11 @@ export type TypeMiddleWare = {
   inject: (socket: Socket) => void
   [k: string]: any
 }
+/** 
+  * @type message | close | 'open' | 'error': 与原生事件一致
+  * @type break: 断网重连次数达到最大时，不再进行重连，触发break事件
+  * @tyoe destroy: 手动调用 destrory 方法，销毁所有监听事件，触发destroy回调
+  */
 export type EventName = 'message' | 'close' | 'open' | 'error' | 'break' | 'destroy'
 export enum ReadyState {
   CONNECTING = 0,
@@ -12,7 +17,8 @@ export enum ReadyState {
   CLOSING = 2,
   CLOSED = 3,
 }
-export type LinkType = 'live' | 'break' | 'destroy'
+export type LinkType = 'live' | 'pause' | 'break' | 'destroy'
+
 
 export class Socket {
   private ws: WebSocket
@@ -208,10 +214,32 @@ export class Socket {
   }
 
   /**
+   * @description 暂时关闭websocet链接, 触发close事件
+   * 可调用resum方法恢复链接  
+   */
+  public pause = async () => {
+    console.log('WebSocket Pause');
+
+    this.$setLinkState('pause')
+    this.ws.close()
+  }
+
+  /**
+   * @description 恢复未被销毁的链接
+   */
+  public resume = () => {
+    if (this.linkType === 'destroy') return
+    console.log('WebSocket Resume')
+
+    this.$setLinkState('live')
+    this.resetSocket(this.raw.url)
+  }
+
+  /**
    * @description 销毁实例，确保在 WebSocket close 事件后执行 destroy 事件
    */
   public destroy = (): void => {
-    this.linkType = 'destroy'
+    this.$setLinkState('destroy')
     this.ws.close();
     if (this.ws.readyState === ReadyState.CLOSED) this.emitDestroy();
   }
