@@ -182,6 +182,12 @@ export class Socket {
    */
   public clearAllEvents = (mode: 'all' | 'part' = 'part'): void => {
     this.eventMap.clear()
+    if (mode === 'all') {
+      this.ws.onopen = null
+      this.ws.onclose = null
+      this.ws.onmessage = null
+      this.ws.onclose = null
+    }
 
     if (mode === 'part') {
       this.middlewareSet.forEach(mid => { mid.inject(this) })
