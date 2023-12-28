@@ -1,4 +1,5 @@
 import { Spread } from '../common/types-utils'
+import { formatSecOrMsec } from '../common/utils'
 import { print } from './wss-print'
 
 export type TypeMiddleWare = {
@@ -18,17 +19,23 @@ export enum ReadyState {
   CLOSED = 3,
 }
 export type LinkType = 'live' | 'pause' | 'break' | 'destroy'
+/**
+ * @socketTag: 标识当前websocket的创建时间
+ */
+export type EWebSocket = WebSocket & { socketTag?: string }
 
 
 export class Socket {
-  private ws: WebSocket
+  private ws: EWebSocket
   private eventMap = new Map<EventName, Set<(ev: any) => void>>()
   private sendQue: (() => void)[] = []
+  private beforeSendHanlders:((data: any) => void)[] = []
   private middlewareSet: Set<TypeMiddleWare> = new Set()
   private linkType: LinkType = 'live'
 
   constructor(url: string) {
     this.ws = new WebSocket(url)
+    this.ws.socketTag = formatSecOrMsec(Date.now(), 'yyyy/MM/dd HH:mm:ss')
     this.initEventListener()
   }
 
@@ -62,10 +69,12 @@ export class Socket {
    * @param ev - The event object
    */
   private onOpen = (ev: Event): void => {
+    print.info(`[Socket(Event) -> open] - WebSocket Tag: ${(ev.target as EWebSocket).socketTag} ↓`, ev)
+
+    this.$setLinkState('live')
     this.sendQue.forEach(send => send())
     this.sendQue = []
 
-    print.info('[Socket(Event) -> open] ↓', ev)
     const evFns = this.eventMap.get('open')
     evFns?.forEach(fn => fn(ev))
   }
@@ -85,7 +94,9 @@ export class Socket {
    * @param ev - The close event object
    */
   private onClose = (ev: CloseEvent): void => {
-    print.stress('[Socket(Event) -> close] ↓', ev)
+    print.stress(`[Socket(Event) -> close] - WebSocket Tag: ${(ev.target as EWebSocket).socketTag} ↓`, ev)
+    if (ev.target !== this.ws) { return print.stress('[Socket(Event) -> close] - 当次回调响应上一个websocket事件，已跳过处理') }
+
     const evFns = this.eventMap.get('close')
     evFns?.forEach(fn => fn(ev))
 
@@ -97,7 +108,11 @@ export class Socket {
    * @param ev - The error event object
    */
   private onError = (ev: Event): void => {
-    print.error('[Socket(Event) -> error] ↓', ev)
+    print.error(`[Socket(Event) -> error] - WebSocket Tag: ${(ev.target as EWebSocket).socketTag} ↓`, ev)
+    if (ev.target !== this.ws) {
+      return print.stress('[Socket(Event) -> error] - 当次回调响应上一个websocket事件，已跳过处理')
+    }
+
     const evFns = this.eventMap.get('error')
     evFns?.forEach(fn => fn(ev))
   }
@@ -126,10 +141,12 @@ export class Socket {
 
   /**
    * @description 重置 WebSocket 的连接
-   * 断线重连时调用此方法
+   * 断线重连时调用此方法: 清除旧实例的事件
    */
   public resetSocket = (url: string): void => {
+    this.clearAllEvents('all')
     this.ws = new WebSocket(url);
+    this.ws.socketTag = formatSecOrMsec(Date.now(), 'yyyy/MM/dd HH:mm:ss')
     this.initEventListener();
   }
 
@@ -181,24 +198,34 @@ export class Socket {
    * @param mode - part: 保留 use 方法注入的事件
    */
   public clearAllEvents = (mode: 'all' | 'part' = 'part'): void => {
-    this.eventMap.clear()
     if (mode === 'all') {
-      this.ws.onopen = null
-      this.ws.onclose = null
-      this.ws.onmessage = null
-      this.ws.onclose = null
+      this.ws.removeEventListener('open', this.onOpen)
+      this.ws.removeEventListener('close', this.onClose)
+      this.ws.removeEventListener('message', this.onMessage)
+      this.ws.removeEventListener('error', this.onError)
     }
 
     if (mode === 'part') {
+      this.eventMap.clear()
       this.middlewareSet.forEach(mid => { mid.inject(this) })
     }
   };
+
+  /**
+   * 注册发送信令前的回调
+   * @param handler - 处理函数
+   */
+  public beforeSendHanlder = (handler: (data: any) => void) => {
+    this.beforeSendHanlders.push(handler)
+  }
 
   /**
    * Sends data to the server using a WebSocket connection.
    * @param data - The data to send to the server.
    */
   public send = async (data: any): Promise<void> => {
+    this.beforeSendHanlders.forEach(hanlder => hanlder(data))
+
     if (this.ws.readyState === ReadyState.CONNECTING) {
       print('[Socket - send] => <readyState - CONNECTING> ↓',)
       this.sendQue.push(() => this.ws.send(JSON.stringify(data)))
@@ -237,7 +264,6 @@ export class Socket {
     if (this.linkType === 'destroy') return
     console.log('WebSocket Resume')
 
-    this.$setLinkState('live')
     this.resetSocket(this.raw.url)
   }
 

@@ -2,6 +2,20 @@ import { getWebSocketHosts } from '@/api/question-answer'
 import { Socket } from './wss'
 import { print } from './wss-print'
 
+/*** 函数防抖 **/
+const debounceFn = (fn: Function, interval = 1000) => {
+  let timer: any = null
+  const clearTimer = () => {
+    clearTimeout(timer)
+    timer = null
+  }
+  const run = (...args: any) => {
+    if (timer) clearTimer()
+    timer = setTimeout(() => { fn(...args); clearTimer() }, interval)
+  }
+
+  return run
+}
 
 export const useReconnect = (
   options: {
@@ -42,6 +56,7 @@ export const useReconnect = (
     let hosts: string[] | null = null
 
     const retry = async () => {
+      print.info(`[Socket(Reconnect) - RUNNING] - 开始第 ${curCount} 次重连`)
       clearTimer()
 
       hosts = hosts || await getHosts().catch(() => {
@@ -82,6 +97,8 @@ export const useReconnect = (
     timer = setTimeout(retry, 0)
   }
 
+  const debounceStart = debounceFn(start, 5000)
+
   /**
    * 监听系统网络恢复，执行 socket 链接恢复.
    * @returns void
@@ -108,6 +125,16 @@ export const useReconnect = (
       }
     }
 
+    // 发送消息前如果链接处于break状态 先回复链接
+    // TODO: 待验证
+    socket.beforeSendHanlder(_data => {
+      if (socket.socketState !== 'break') return
+      print.info(`[Socket(reconnect - before_send_info)] ->`, _data, socket)
+      stop()
+      socket.resume()
+    })
+
+
     socket.addEventListener('error', () => {
       print.error(`[Socket(reconnect - listener)] -> <readyState - ${socket.raw.readyState}>`)
       // if (socket.raw.readyState === ReadyState.CONNECTING) {
@@ -117,12 +144,16 @@ export const useReconnect = (
 
     socket.addEventListener('close', (ev: CloseEvent) => {
       // close 事件回复状态异常触发重连
-      if (!ev.wasClean) { start(socket); }
+      if (!ev.wasClean) {
+        print.info('[Socket(reconnect - link_close)] -> 链接关闭触发重连')
+        debounceStart(socket);
+      }
     });
 
     socket.addEventListener('heartbeat-reconnect' as any, () => {
       // 监听心跳异常，启动重连
-      start(socket)
+      print.info('[Socket(reconnect - heartbeat_reconnect)] -> 心跳无响应触发重连')
+      debounceStart(socket)
     })
 
     socket.addEventListener('open', () => {
