@@ -11,6 +11,7 @@ export default function createHtml(env: IViteEnv, isBuild: boolean): PluginOptio
   const appConfigSrc =
     `${path || '/'}global.js?v=${pkg.version}-${new Date().getTime()}`;
   return createHtmlPlugin({
+    viteNext: true,
     inject: {
       data: {
         injectScript: `<script src="${appConfigSrc}"></script>`,

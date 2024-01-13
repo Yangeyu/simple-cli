@@ -2,11 +2,13 @@ import { defineConfig, ConfigEnv, loadEnv } from 'vite'
 import { resolve } from 'path'
 import loadVitePlugins, { convertEnv } from './vites'
 import { IViteEnv } from './vites/types'
+import { UserConfigExport } from 'vite'
+import { UserConfig } from 'vite'
 
 // https://vitejs.dev/config/
 const envPath = resolve('vites/env')
 
-export default defineConfig(({ command, mode }: ConfigEnv) => {
+export default defineConfig(({ command, mode }: ConfigEnv): UserConfig  => {
   const viteEnv: IViteEnv = convertEnv(loadEnv(mode, envPath))
   const isBuild = command === 'build'
   const { VITE_IS_DROP } = viteEnv
@@ -21,7 +23,10 @@ export default defineConfig(({ command, mode }: ConfigEnv) => {
         },
       ],
     },
-    envPath,
+    define: {
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true,
+    },
+    envDir: envPath,
     plugins: loadVitePlugins(viteEnv, isBuild),
     server: {
       open: false,
