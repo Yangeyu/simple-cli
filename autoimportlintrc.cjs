@@ -43,6 +43,7 @@ module.exports = {
     defineProps: 'readonly',
     defineEmits: 'readonly',
     defineExpose: 'readonly',
+    defineModel: 'readonly',
     withDefaults: 'readonly',
     // vue-router
     useRoute: 'readonly',

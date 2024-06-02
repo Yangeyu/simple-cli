@@ -1,23 +1,23 @@
-import { Plugin } from 'vite';
+import { Plugin, PluginOption } from 'vite';
 import vue from '@vitejs/plugin-vue'
 import createAutoImport from './plugins/auto-import';
-import WindiCSS from 'vite-plugin-windicss'
 import createHtml from './plugins/html';
 import { IViteEnv } from './types';
 import createComponents from './plugins/components';
 import createCompression from './plugins/compression';
 import createLegacy from './plugins/legacy';
 import { createUnpluginIcons } from './plugins/unplugin-icons';
+import UnoCSS from 'unocss/vite'
 
-export default function loadVitePlugins(viteEnv: IViteEnv, isBuild = false): Plugin[] {
-  const plugins: Plugin[] = []
+export default function loadVitePlugins(viteEnv: IViteEnv, isBuild = false){
+  const plugins: PluginOption[] = []
 
   plugins.push(vue())
   plugins.push(createAutoImport())
-  plugins.push(...WindiCSS())
   plugins.push(createHtml(viteEnv, isBuild) as Plugin)
   plugins.push(createComponents())
   plugins.push(createUnpluginIcons())
+  plugins.push(UnoCSS())
   isBuild && plugins.push(...createCompression(viteEnv))
   isBuild && plugins.push(...createLegacy(viteEnv))
   return plugins

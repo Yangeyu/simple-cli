@@ -9,7 +9,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:vue/vue3-recommended',
     'plugin:@typescript-eslint/recommended',
-    './autoimportlintrc.js',
+    './autoimportlintrc.cjs',
   ],
   parser: 'vue-eslint-parser',
   parserOptions: {

@@ -2,11 +2,11 @@
   // 文件相关配置
   "files.eol": "\n",
   "files.exclude": {
-    "**/.history": true,
+    "**/.history": true
   },
   "files.associations": {
     "*.http": "http",
-    ".env.*": "dotenv",
+    ".env.*": "dotenv"
   },
   "path-intellisense.mappings": {
     "@": "${workspaceRoot}/src",
@@ -16,15 +16,13 @@
   "eslint.enable": true,
   "eslint.format.enable": true,
   "eslint.options": {
-    "extensions": [
-      ".vue",
-    ]
+    "extensions": [".vue"]
   },
   // 编辑器相关配置
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.fixAll.stylelint": true,
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
   },
   "editor.tabSize": 2,
   "editor.quickSuggestions": {
@@ -32,7 +30,7 @@
   },
   "editor.wordWrap": "on",
   "[vue]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
@@ -49,5 +47,5 @@
   ],
   // windi相关配置
   "css.validate": false,
-  "scss.validate": false,
+  "scss.validate": false
 }
