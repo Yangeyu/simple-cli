@@ -56,5 +56,7 @@ module.exports = {
     watchDebounced: 'readonly',
     unrefElement: 'readonly',
     useIntersectionObserver: 'readonly',
+    useRafFn: 'readonly',
+    useThrottleFn: 'readonly',
   },
 };
